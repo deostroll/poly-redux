@@ -1,0 +1,127 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer-redux/polymer-redux.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+<dom-module id="todo-list-item">
+	<template>
+		<style type="text/css">
+			:host {
+				display: block;
+			}
+
+			.completed {
+				text-decoration: line-through;
+			}
+			.align-right {
+				text-align: right;
+			}
+
+			.small {
+				font-size: 8pt;
+			}
+
+			.task-wrap {
+				padding-top: 3px;
+				padding-left: 3px;
+			}
+
+			.task-wrap:hover {
+				background-color: lightyellow;
+				border-bottom: 1px solid black;
+			}
+		</style>
+		<li>
+			<div class="task-wrap">
+				<span class$="{{_apply(item.completed)}}">{{item.text}}</span>
+				<div class="align-right">
+					<paper-button class="small" hidden$="{{item.completed}}" on-click="markDone">Mark Done</paper-button>
+					<paper-button class="small" hidden$="{{_isNot(item.completed)}}" on-click="markNotDone">Mark Not Done</paper-button>
+					<paper-button class="small">delete</paper-button>
+				</div>
+			</div>			
+		</li>
+	
+	</template>
+	<script type="text/javascript" src="store.js"></script>
+	<script>
+		var TodoRedux = ReduxApp.default();
+		var flags = TodoRedux.VisibilityFlags;
+			// SHOW_ALL, SHOW_COMPLETED, SHOW_PENDING
+		(function(){
+			// console.log('foo')
+			var ReduxBehavior = PolymerRedux(TodoRedux.getStore());
+			Polymer({
+
+				is: 'todo-list-item',
+
+				behaviors: [ReduxBehavior],
+
+				properties: {
+					visibilityFlag: {
+						type: String,
+						statePath: 'layout.visibilityFlag'
+					},
+
+					item : {
+						type: Object,
+						statePath: function() {
+							return TodoRedux.todoSelectors.getTodoByIndex(this.ordinal)
+						}
+					}
+				},
+
+				_plusOne: function(i) { return i + 1; },
+				
+				canShowItem: function(idx) {
+					console.assert(idx === this.ordinal, 'incorrect index');
+					console.log('canShowItem', idx)
+					if (this.visibilityFlag === flags.SHOW_ALL) {
+						return true;
+					}
+					else if (this.visibilityFlag === flags.SHOW_COMPLETED && this.item.completed) {
+						return true;
+					}
+					else if(this.visibilityFlag === flags.SHOW_PENDING && !this.item.completed) {
+						return true;
+					}
+					else {
+						return false;
+					}
+				},
+
+				_apply: function(item) {
+					console.log('_apply', item)
+					// if (item.completed) {
+					// 	return "completed"
+					// }
+					// else {
+					// 	return ""
+					// }
+					return item ? "completed" : ""
+				},
+
+				_is: function(flag) {
+					// console.log('foo') 
+					return flag 
+				},
+
+				_isNot: function(flag) {
+					// console.log('bar') 
+					return !flag 
+				},
+
+				markDone: function() {
+					TodoRedux.todoActions.markItem(this.ordinal, true)
+				},
+
+				markNotDone: function() {
+					TodoRedux.todoActions.markItem(this.ordinal, false)
+				},
+
+				detached: function() {
+					console.log('detached', this.item.text)
+				}
+			})
+		})();
+	</script>
+</dom-module>

@@ -1,0 +1,32 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer-redux/polymer-redux.html">
+<link rel="import" href="todo-form.html">
+<link rel="import" href="todo-list.html">
+<dom-module id="todo-app">
+	<template>
+		<style>
+			:host {
+				display: block;
+			}
+			.container {
+				width: 85%;
+				margin: 0 auto 0 auto;
+				/*outline: 1px dotted black;*/
+			}
+		</style>
+		
+		<div class="container">
+			<h1>Basic Todo App</h1>
+			<todo-form></todo-form>
+			<hr>
+			<todo-list></todo-list>
+			
+		</div>	
+	</template>
+	<script>
+
+		var todoApp = Polymer({
+			is:'todo-app',
+		})
+	</script>	
+</dom-module>

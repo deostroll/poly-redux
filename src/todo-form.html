@@ -1,0 +1,113 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer-redux/polymer-redux.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="todo-form">
+	<template>
+		<style is="custom-style">
+
+			.horizontal {
+				/*outline: 1px dotted blue;*/
+				@apply --layout-horizontal;
+			}
+
+			.flex-child {
+				@apply --layout-flex;
+			}
+			paper-button.white {
+				background-color: #fff;
+			}
+			paper-button.small {
+				font-size: 9pt;
+			}
+			
+			paper-button {
+				height: 25px;
+			}
+		</style>
+		
+		<div class="horizontal">
+			<paper-input label="What do you want to do?" value={{task}} on-keyup="monitorKeyUp" class="flex-child"></paper-input>
+		</div>
+		<paper-dropdown-menu label="Filter Todos" id="drpDown">
+		  <paper-listbox slot="dropdown-content" selected="{{currentFilter(flags)}}">
+		    <template is="dom-repeat" items="{{flags}}">
+		    	<paper-item value="{{item.value}}" on-click="changeVisibility">{{item.text}}</paper-item>
+		    </template>
+		  </paper-listbox>
+		</paper-dropdown-menu>	
+	</template>
+	<script type="text/javascript" src="store.js"></script>
+	<script>
+		// var foo = 'bar'
+		// console.log(ReduxApp.default)
+		var TodoRedux = ReduxApp.default();
+
+		(function() {
+			// console.log('form')
+			var ReduxBehavior = PolymerRedux(TodoRedux.getStore());
+
+			Polymer({
+				is:'todo-form',
+				behaviors: [ ReduxBehavior ],
+
+				properties: {
+					task: {
+						type: String
+					},
+					flags: {
+						type: Array,
+						value: function() {
+							var flags = TodoRedux.VisibilityFlags;
+							return Object.keys(flags).map(function(flag){
+								return {
+									text: flag,
+									value: flags[flag]
+								}
+							});
+						}
+					}
+				},
+
+				add: function() {
+					// console.log('add')
+					TodoRedux.todoActions.addItem(this.task);
+					this.task = '';
+				},
+
+				monitorKeyUp: function(event) {
+					if (event.keyCode === 13) {
+						if (this.task.length) {
+							this.add();	
+						}						
+					}
+				},
+
+				changeVisibility: function(evt) {
+					TodoRedux.layoutActions.setTodoFilter(evt.model.item.value);
+				},
+
+				currentFilter: function(flags) {
+					var currentState = TodoRedux.layoutSelectors.getCurrentFilter();
+					var found = false;
+					return flags.reduce(function(idx, flag, i){
+						if (!found) {
+							if (flag.value === currentState) {
+								found = true;
+								idx = i;
+							}
+						}
+						return idx;
+					}, -1);
+				}
+
+			});
+		})();
+		
+	</script>
+</dom-module>

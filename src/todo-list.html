@@ -1,0 +1,54 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer-redux/polymer-redux.html">
+<link rel="import" href="todo-list-item.html">
+
+<dom-module id="todo-list">
+	<template>
+		<style>
+			ul {
+				margin: 0px;
+				padding: 5px;
+				list-style-type: none;
+				border: 1px solid #black;
+				border-radius: 5px;
+			}
+		</style>
+		<template is="dom-if" if={{!hasItems}}>
+			<p>Emtpy...add tasks!!</p>
+		</template>
+		<ul>
+			<template is="dom-if" if={{hasItems}}>
+				<template is="dom-repeat" items="{{tasks}}">
+					<todo-list-item ordinal="{{index}}"></todo-list-item>
+				</template>
+			</template>		
+		</ul>
+		
+	</template>
+	<script type="text/javascript" src="store.js"></script>
+	<script>
+		var TodoRedux = ReduxApp.default();
+		// console.log('foo');
+		(function(){
+			var ReduxBehavior = PolymerRedux(TodoRedux.getStore());
+			
+			Polymer({
+				is: 'todo-list',
+				behaviors: [ReduxBehavior],
+				properties: {
+					tasks: {
+						type: Array,
+						statePath: 'todo'
+					},
+					hasItems: {
+						type: Boolean,
+						statePath: function(state) {
+							return !!state.todo.length;
+						}
+					}
+
+				},
+			});
+		})();
+	</script>
+</dom-module>
